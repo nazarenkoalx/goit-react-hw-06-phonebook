@@ -2,8 +2,9 @@ import { Formik, Field, ErrorMessage } from 'formik';
 import { nanoid } from 'nanoid';
 import { Form, SubmitButton } from './ContactForm.styled';
 import { object, string } from 'yup';
-import PropTypes from 'prop-types';
 import { Section } from 'components/Section/Section.styled';
+import { useDispatch } from 'react-redux';
+import { addContact } from 'redux/actions';
 
 let ContactsSchema = object({
   name: string()
@@ -13,45 +14,49 @@ let ContactsSchema = object({
   number: string().required(),
 });
 // .length(10, 'type 10 digits of phone number')
-export const ContactForm = ({ onSubmit }) => (
-  <Section>
-    <h1>Contact Book</h1>
-    <Formik
-      initialValues={{
-        name: '',
-        number: '',
-      }}
-      onSubmit={(values, actions) => {
-        onSubmit({ ...values });
-        actions.resetForm();
-      }}
-      validationSchema={ContactsSchema}
-    >
-      <Form>
-        <label htmlFor="name">Name</label>
-        <Field
-          type="text"
-          id={nanoid()}
-          name="name"
-          placeholder="Joe Biden"
-          title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-        />
-        <ErrorMessage name="name" component="span" />
-        <label htmlFor="number">Phone</label>
-        <Field
-          type="tel"
-          id={nanoid()}
-          name="number"
-          placeholder="067-000-00-00"
-          title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-        />
-        <ErrorMessage name="number" component="span" />
-        <SubmitButton type="submit">Add contact</SubmitButton>
-      </Form>
-    </Formik>
-  </Section>
-);
+export const ContactForm = () => {
+  const dispatch = useDispatch();
 
-ContactForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
+  const handleFormSubmit = newContact => {
+    dispatch(addContact(newContact));
+  };
+
+  return (
+    <Section>
+      <h1>Contact Book</h1>
+      <Formik
+        initialValues={{
+          name: '',
+          number: '',
+        }}
+        onSubmit={(values, actions) => {
+          handleFormSubmit({ ...values });
+          actions.resetForm();
+        }}
+        validationSchema={ContactsSchema}
+      >
+        <Form>
+          <label htmlFor="name">Name</label>
+          <Field
+            type="text"
+            id={nanoid()}
+            name="name"
+            placeholder="Joe Biden"
+            title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
+          />
+          <ErrorMessage name="name" component="span" />
+          <label htmlFor="number">Phone</label>
+          <Field
+            type="tel"
+            id={nanoid()}
+            name="number"
+            placeholder="067-000-00-00"
+            title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
+          />
+          <ErrorMessage name="number" component="span" />
+          <SubmitButton type="submit">Add contact</SubmitButton>
+        </Form>
+      </Formik>
+    </Section>
+  );
 };
