@@ -3,8 +3,11 @@ import { nanoid } from 'nanoid';
 import { Form, SubmitButton } from './ContactForm.styled';
 import { object, string } from 'yup';
 import { Section } from 'components/Section/Section.styled';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addContact } from 'redux/contactSlice';
+import { getContacts } from 'redux/selectors';
+import { notifyError, notifySuccess } from 'services/notifications';
+// import { toast } from 'react-toastify';
 
 let ContactsSchema = object({
   name: string()
@@ -13,12 +16,36 @@ let ContactsSchema = object({
     .max(20, 'must be less than 20 characters long'),
   number: string().required(),
 });
+
 // .length(10, 'type 10 digits of phone number')
 export const ContactForm = () => {
   const dispatch = useDispatch();
+  const contacts = useSelector(getContacts);
 
-  const handleFormSubmit = newContact => {
-    dispatch(addContact(newContact));
+  const handleFormSubmit = ({ name, number }) => {
+    const doubleName = contacts.find(contact => {
+      return contact.name === name;
+    });
+
+    const doubleNumber = contacts.find(contact => {
+      return contact.number === number;
+    });
+
+    if (doubleName) {
+      return notifyError('Contact with this name already exists');
+    }
+
+    if (doubleNumber) {
+      return notifyError(
+        `Contact with this number already exists, check ${doubleNumber.name} contact`
+      );
+    }
+    if (!doubleName && !doubleNumber) {
+      notifySuccess(
+        `Contact ${name} was successfully added to yours contact book`
+      );
+      dispatch(addContact({ name, number }));
+    }
   };
 
   return (
